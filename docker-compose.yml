@@ -1,0 +1,13 @@
+services:
+  screenshorter:
+    container_name: screenshorter
+    build:
+      context: .
+    environment:
+      SS_LOGLEVEL: ${SS_LOGLEVEL} #0-local (начиная с DEBUG), 1-production (начиная с INFO)
+      SS_LOGFORMAT: ${SS_LOGFORMAT} # json or text
+      SS_LOGTARGET: ${SS_LOGTARGET} # local or sentry
+      SS_SENTRYDSN: ${SS_SENTRYDSN} # sentry DSN
+    ports:
+      - "8033:8033"
+    restart: always
