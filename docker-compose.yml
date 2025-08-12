@@ -2,7 +2,9 @@ services:
   screenshorter:
     container_name: screenshorter
     build:
+      #context: .
       context: .
+      dockerfile: Dockerfile2
     environment:
       SS_LOGLEVEL: ${SS_LOGLEVEL} #0-local (начиная с DEBUG), 1-production (начиная с INFO)
       SS_LOGFORMAT: ${SS_LOGFORMAT} # json or text
