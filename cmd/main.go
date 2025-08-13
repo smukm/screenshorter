@@ -26,7 +26,10 @@ func main() {
 
 	// Logger
 	lgr := logger.NewLogger(cfg)
-	lgr.Info().Msgf("Screenshorter %s", config.Version)
+
+	lgr.Info().
+		Str("version", config.Version).
+		Msg("Starting Screenshorter")
 
 	// Sentry
 	if cfg.LogTarget == "sentry" {
@@ -45,25 +48,37 @@ func main() {
 
 	screenshoter, err := service.NewPlaywrite()
 	if err != nil {
-		lgr.Fatal().Err(err).Msgf("NewPlaywrite creating error")
+		lgr.Fatal().Err(err).Msgf("Failed to initialize Playwright")
 	}
 	s := service.NewService(screenshoter)
 	h := handlers.NewHandler(s, cfg)
 	srv := httpserver.NewServer()
+
+	serverErr := make(chan error, 1)
 	go func() {
-		if err := srv.Run("8033", h.InitRoutes()); err != nil && err != http.ErrServerClosed {
-			lgr.Fatal().Err(err).Msgf("http server run error %s", err.Error())
+		lgr.Info().Str("port", cfg.Port).Msg("Starting HTTP server")
+		if err := srv.Run(cfg.Port, h.InitRoutes()); err != nil && err != http.ErrServerClosed {
+			serverErr <- err
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	lgr.Info().Msg("Shutting down server...")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	select {
+	case err := <-serverErr:
+		lgr.Error().Err(err).Msg("Server runtime error")
+	case sig := <-quit:
+		lgr.Info().Str("signal", sig.String()).Msg("Received shutdown signal")
+	}
+
+	// Graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
+	lgr.Info().Msg("Shutting down server...")
 	if err := srv.Stop(ctx); err != nil {
-		lgr.Error().Err(err).Msg("Server forced to shutdown")
+		lgr.Error().Err(err).Msg("Server shutdown error")
 	}
+
+	lgr.Info().Msg("Server stopped gracefully")
 }
