@@ -1,0 +1,9 @@
+--12345
+Content-Disposition: form-data; name="html"
+
+<h1>Test</h1>
+--12345
+Content-Disposition: form-data; name="browser"
+
+firefox
+--12345--

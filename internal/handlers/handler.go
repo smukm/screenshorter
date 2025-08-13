@@ -37,6 +37,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	router.GET("/worker-stats", h.MetricsHandler)
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
 
 	return router
 }

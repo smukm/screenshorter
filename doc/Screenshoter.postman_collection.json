@@ -1,0 +1,109 @@
+{
+	"info": {
+		"_postman_id": "1f4e5696-ccd5-429b-ab3f-f5fd4778d723",
+		"name": "Screenshoter",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17930641"
+	},
+	"item": [
+		{
+			"name": "screenshot",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 12345",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "html",
+							"value": "<!DOCTYPE html>\n<html>\n<head>\n<title>Example</title>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n</head>\n<body>\n<h1>An Expample</h1>\n</body>\n</html>",
+							"type": "text"
+						},
+						{
+							"key": "browser",
+							"value": "webkit",
+							"description": "chrome, firefox,webkit",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8033/api/screen",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8033",
+					"path": [
+						"api",
+						"screen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "metrics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8033/metrics",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8033",
+					"path": [
+						"metrics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "worker stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8033/worker-stats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8033",
+					"path": [
+						"worker-stats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "health check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8033/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8033",
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
