@@ -43,9 +43,12 @@ func main() {
 		defer sentry.Flush(2 * time.Second)
 	}
 
-	screenshorter := service.NewPlaywrite()
+	screenshorter, err := service.NewPlaywrite()
+	if err != nil {
+		lgr.Fatal().Err(err).Msgf("NewPlaywrite")
+	}
 	s := service.NewService(screenshorter)
-	h := handlers.NewHandler(s)
+	h := handlers.NewHandler(s, cfg)
 	srv := httpserver.NewServer()
 	go func() {
 		if err := srv.Run("8033", h.InitRoutes()); err != nil && err != http.ErrServerClosed {

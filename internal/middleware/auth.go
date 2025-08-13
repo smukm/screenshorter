@@ -3,10 +3,11 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"screenshorter/config"
 	"strings"
 )
 
-func BearerAuthMiddleware() gin.HandlerFunc {
+func BearerAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -21,8 +22,8 @@ func BearerAuthMiddleware() gin.HandlerFunc {
 		}
 
 		token := parts[1]
-		// Validate the token (add your validation logic here)
-		if !isValidToken(token) {
+		// Validate the token
+		if !isValidToken(token, cfg) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return
 		}
@@ -32,8 +33,6 @@ func BearerAuthMiddleware() gin.HandlerFunc {
 
 }
 
-func isValidToken(token string) bool {
-	// Example: validate against a hardcoded token (for demo only)
-	// In production, validate against your auth service or JWT
-	return token == "gzzg"
+func isValidToken(token string, cfg *config.Config) bool {
+	return token == cfg.AccessToken
 }

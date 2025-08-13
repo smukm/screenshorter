@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"screenshorter/config"
 	"screenshorter/internal/middleware"
 	"screenshorter/internal/service"
 
@@ -8,12 +10,16 @@ import (
 )
 
 type Handler struct {
-	service *service.Service
+	service    *service.Service
+	cfg        *config.Config
+	workerPool chan struct{} // Семафор для ограничения одновременных запросов
 }
 
-func NewHandler(service *service.Service) *Handler {
+func NewHandler(service *service.Service, cfg *config.Config) *Handler {
 	return &Handler{
-		service: service,
+		service:    service,
+		cfg:        cfg,
+		workerPool: make(chan struct{}, cfg.MaxWorkers), // Пулинг воркеров
 	}
 }
 
@@ -24,10 +30,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	router.Use()
 
 	api := router.Group("/api")
-	api.Use(middleware.BearerAuthMiddleware())
+	api.Use(middleware.BearerAuthMiddleware(h.cfg))
 	{
-		api.POST("gz", h.Make)
+		api.POST("screen", h.Make)
 	}
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	router.GET("/worker-stats", h.MetricsHandler)
 
 	return router
 }
