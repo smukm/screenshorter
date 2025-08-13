@@ -86,7 +86,7 @@ func (h *Handler) Make(ctx *gin.Context) {
 	// Настройки скриншота
 	opts := service.ScreenshotOptions{
 		Browser:  defaultBrowser,
-		Type:     "png",
+		Type:     h.cfg.Type,
 		Quality:  nil,
 		FullPage: true,
 		Viewport: (*struct {

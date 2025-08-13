@@ -8,6 +8,7 @@ services:
       SS_PORT: ${SS_PORT} # порт сервиса
       SS_ACCESSTOKEN: ${SS_ACCESSTOKEN} # токен доступа к сервису
       SS_MAXWORKERS: ${SS_MAXWORKERS} # количество потоков (горутин)
+      SS_TYPE: ${SS_TYPE} # формат скриншота png|jpeg
       GIN_MODE: ${GIN_MODE}
       SS_LOGLEVEL: ${SS_LOGLEVEL} #0-local (начиная с DEBUG), 1-production (начиная с INFO)
       SS_LOGFORMAT: ${SS_LOGFORMAT} # json or text

@@ -34,7 +34,7 @@ func main() {
 			Dsn:         cfg.SentryDsn,
 			Environment: "production",
 			//Debug:       true,
-			Release: "Screenshorter@" + config.Version,
+			Release: "Screenshoter@" + config.Version,
 		})
 		if err != nil {
 			lgr.Fatal().Err(err).Msgf("sentry.Init %s", err.Error())
@@ -43,11 +43,11 @@ func main() {
 		defer sentry.Flush(2 * time.Second)
 	}
 
-	screenshorter, err := service.NewPlaywrite()
+	screenshoter, err := service.NewPlaywrite()
 	if err != nil {
-		lgr.Fatal().Err(err).Msgf("NewPlaywrite")
+		lgr.Fatal().Err(err).Msgf("NewPlaywrite creating error")
 	}
-	s := service.NewService(screenshorter)
+	s := service.NewService(screenshoter)
 	h := handlers.NewHandler(s, cfg)
 	srv := httpserver.NewServer()
 	go func() {

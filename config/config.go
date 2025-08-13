@@ -18,6 +18,8 @@ type Config struct {
 	SentryDsn string `required:"false"`
 
 	MaxWorkers int `default:"5"`
+
+	Type string `default:"png"`
 }
 
 // получить кофигурацию из переменных окружения
