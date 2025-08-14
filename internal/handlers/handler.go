@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"screenshorter/config"
-	"screenshorter/internal/middleware"
-	"screenshorter/internal/service"
+	"screenshoter/config"
+	"screenshoter/internal/middleware"
+	"screenshoter/internal/service"
 
 	gin "github.com/gin-gonic/gin"
 )

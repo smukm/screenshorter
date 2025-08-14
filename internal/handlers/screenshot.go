@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
-	"screenshorter/internal/service"
+	"screenshoter/internal/service"
 	"time"
 )
 

@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"screenshorter/config"
+	"screenshoter/config"
 	"strings"
 )
 

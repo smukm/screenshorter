@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"screenshorter/config"
-	"screenshorter/internal/handlers"
-	"screenshorter/internal/service"
-	"screenshorter/pkg/httpserver"
-	"screenshorter/pkg/logger"
+	"screenshoter/config"
+	"screenshoter/internal/handlers"
+	"screenshoter/internal/service"
+	"screenshoter/pkg/httpserver"
+	"screenshoter/pkg/logger"
 	"syscall"
 	"time"
 )
@@ -29,7 +29,7 @@ func main() {
 
 	lgr.Info().
 		Str("version", config.Version).
-		Msg("Starting Screenshorter")
+		Msg("Starting screenshoter")
 
 	// Sentry
 	if cfg.LogTarget == "sentry" {

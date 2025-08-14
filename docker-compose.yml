@@ -1,6 +1,6 @@
 services:
-  screenshorter:
-    container_name: screenshorter
+  screenshoter:
+    container_name: screenshoter
     build:
       context: .
       dockerfile: Dockerfile
