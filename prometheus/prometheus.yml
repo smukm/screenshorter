@@ -5,6 +5,6 @@ global:
 scrape_configs:
   - job_name: 'screenshoter'
     static_configs:
-      - targets: ['localhost:8033']  # или localhost если запускаете локально
+      - targets: ['screenshoter:8033']  # или localhost если запускаете локально
     metrics_path: '/metrics'
     scrape_interval: 5s
