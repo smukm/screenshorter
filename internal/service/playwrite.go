@@ -117,6 +117,42 @@ func (p *Playwrite) Make(html string, opts ScreenshotOptions) ([]byte, string, e
 		screenshotOpts.Type = screenshotType
 	}
 
+	// Если указана область выделения
+	if opts.Selections != nil {
+
+		for _, selection := range opts.Selections {
+			// Проверяем валидность координат
+			if selection.Width <= 0 || selection.Height <= 0 {
+				return nil, "", fmt.Errorf("invalid selection dimensions: width and height must be positive")
+			}
+
+			// JavaScript код для добавления прямоугольника выделения
+			js := fmt.Sprintf(`
+            const div = document.createElement('div');
+            div.style.position = 'absolute';
+            div.style.left = '%dpx';
+            div.style.top = '%dpx';
+            div.style.width = '%dpx';
+            div.style.height = '%dpx';
+            div.style.border = '2px dashed #FF0000';
+            div.style.boxSizing = 'border-box';
+            div.style.zIndex = '2147483647';
+            div.style.pointerEvents = 'none';
+            document.body.appendChild(div);
+        `,
+				selection.X,
+				selection.Y,
+				selection.Width,
+				selection.Height,
+			)
+
+			// Выполняем JavaScript на странице
+			if _, err := page.Evaluate(js); err != nil {
+				return nil, "", fmt.Errorf("failed to draw selection rectangle: %w", err)
+			}
+		}
+	}
+
 	// Делаем скриншот в память
 	bytes, err := page.Screenshot(screenshotOpts)
 	if err != nil {

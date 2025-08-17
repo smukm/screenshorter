@@ -101,6 +101,16 @@ func (h *Handler) Make(ctx *gin.Context) {
 			Height int
 		}{Width: 1200, Height: 800}),*/
 		Timeout: 5000,
+		Selections: []service.SelectionArea{
+			{
+				X: 100, Y: 150,
+				Width: 300, Height: 200,
+			},
+			{
+				X: 50, Y: 50,
+				Width: 150, Height: 100,
+			},
+		},
 	}
 
 	// Канал для результата

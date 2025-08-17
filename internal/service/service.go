@@ -4,6 +4,13 @@ type Screenshot interface {
 	Make(html string, opts ScreenshotOptions) ([]byte, string, error)
 }
 
+type SelectionArea struct {
+	X      int `json:"x"`      // Координата X начальной точки
+	Y      int `json:"y"`      // Координата Y начальной точки
+	Width  int `json:"width"`  // Ширина выделенной области
+	Height int `json:"height"` // Высота выделенной области
+}
+
 // ScreenshotOptions параметры для настройки скриншота
 type ScreenshotOptions struct {
 	Browser        BrowserType `json:"browser"`
@@ -15,7 +22,8 @@ type ScreenshotOptions struct {
 		Width  int `json:"width"`
 		Height int `json:"height"`
 	} `json:"viewport"`
-	Timeout float64 `json:"timeout"`
+	Timeout    float64 `json:"timeout"`
+	Selections []SelectionArea
 }
 
 type Service struct {
