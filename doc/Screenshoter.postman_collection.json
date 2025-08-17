@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "1f4e5696-ccd5-429b-ab3f-f5fd4778d723",
 		"name": "Screenshoter",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "17930641"
 	},
 	"item": [
@@ -13,7 +13,7 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Bearer 12345",
+						"value": "Bearer secret",
 						"type": "text"
 					}
 				],
@@ -33,18 +33,7 @@
 						}
 					]
 				},
-				"url": {
-					"raw": "http://localhost:8033/api/screen",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8033",
-					"path": [
-						"api",
-						"screen"
-					]
-				}
+				"url": "http://localhost:8033/api/screen"
 			},
 			"response": []
 		},
@@ -53,17 +42,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "http://localhost:8033/metrics",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8033",
-					"path": [
-						"metrics"
-					]
-				}
+				"url": "http://localhost:8033/metrics"
 			},
 			"response": []
 		},
@@ -72,17 +51,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "http://localhost:8033/worker-stats",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8033",
-					"path": [
-						"worker-stats"
-					]
-				}
+				"url": "http://localhost:8033/worker-stats"
 			},
 			"response": []
 		},
@@ -91,17 +60,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "http://localhost:8033/health",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8033",
-					"path": [
-						"health"
-					]
-				}
+				"url": "http://localhost:8033/health"
 			},
 			"response": []
 		}

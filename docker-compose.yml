@@ -1,6 +1,6 @@
 services:
-  screenshorter:
-    container_name: screenshorter
+  screenshoter:
+    container_name: screenshoter
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,3 +17,24 @@ services:
     ports:
       - "${SS_PORT}:${SS_PORT}"
     restart: always
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - screenshoter
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana-storage:

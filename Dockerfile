@@ -13,11 +13,11 @@ COPY . .
 RUN PWGO_VER=$(grep -oE "playwright-go v\S+" go.mod | sed 's/playwright-go //g') \
     && go install github.com/playwright-community/playwright-go/cmd/playwright@${PWGO_VER}
 # Build your app
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o screenshorter ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o screenshoter ./cmd/main.go
 
 
 # Stage 3: Final
-FROM ubuntu:noble
+FROM ubuntu:24.04
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy binaries
 COPY --from=builder /go/bin/playwright /usr/local/bin/playwright
-COPY --from=builder /app/screenshorter /app/screenshorter
+COPY --from=builder /app/screenshoter /app/screenshoter
 
 # Install Playwright browsers and dependencies
 RUN apt-get update && apt-get install -y \
@@ -38,4 +38,4 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-CMD ["/app/screenshorter"]
+CMD ["/app/screenshoter"]

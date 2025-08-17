@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"screenshorter/config"
+	"screenshoter/config"
 	"strings"
 )
 
@@ -22,7 +22,6 @@ func BearerAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		}
 
 		token := parts[1]
-		// Validate the token
 		if !isValidToken(token, cfg) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return

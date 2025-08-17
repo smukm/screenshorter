@@ -6,7 +6,7 @@ type Screenshot interface {
 
 // ScreenshotOptions параметры для настройки скриншота
 type ScreenshotOptions struct {
-	Browser        BrowserType `json:"browser"` // Тип браузера
+	Browser        BrowserType `json:"browser"`
 	Quality        *int        `json:"quality"`
 	Type           string      `json:"type"`
 	FullPage       bool        `json:"full_page"`

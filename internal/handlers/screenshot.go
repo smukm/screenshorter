@@ -4,10 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
-	"screenshorter/internal/service"
+	"screenshoter/internal/service"
 	"time"
 )
 
+// метрики для prometeus
 var (
 	activeWorkersGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "screenshot_service_active_workers",
@@ -42,10 +43,22 @@ func init() {
 func (h *Handler) Make(ctx *gin.Context) {
 
 	startTime := time.Now()
-	browserType := "chromium" // значение по умолчанию
+
+	// Определяем браузер
+	defaultBrowser := service.BrowserChromium
+	browser := ctx.PostForm("browser")
+	switch browser {
+	case "firefox":
+		defaultBrowser = service.BrowserFirefox
+	case "webkit":
+		defaultBrowser = service.BrowserWebkit
+	}
+
 	defer func() {
-		// Записываем продолжительность запроса
-		requestDurationHistogram.WithLabelValues(browserType).Observe(time.Since(startTime).Seconds())
+		if ctx.Writer.Status() >= 200 && ctx.Writer.Status() < 300 {
+			// Записываем продолжительность запроса
+			requestDurationHistogram.WithLabelValues(browser).Observe(time.Since(startTime).Seconds())
+		}
 	}()
 
 	html := ctx.PostForm("html")
@@ -73,29 +86,20 @@ func (h *Handler) Make(ctx *gin.Context) {
 		return
 	}
 
-	// Определяем браузер
-	defaultBrowser := service.BrowserChromium
-	browser := ctx.PostForm("browser")
-	switch browser {
-	case "firefox":
-		defaultBrowser = service.BrowserFirefox
-	case "webkit":
-		defaultBrowser = service.BrowserWebkit
-	}
-
 	// Настройки скриншота
 	opts := service.ScreenshotOptions{
-		Browser:  defaultBrowser,
-		Type:     h.cfg.Type,
-		Quality:  nil,
-		FullPage: true,
-		Viewport: (*struct {
+		Browser:        defaultBrowser,
+		Type:           h.cfg.Type,
+		Quality:        nil,
+		FullPage:       true,
+		OmitBackground: false,
+		/*Viewport: (*struct {
 			Width  int `json:"width"`
 			Height int `json:"height"`
 		})(&struct {
 			Width  int
 			Height int
-		}{Width: 1200, Height: 800}),
+		}{Width: 1200, Height: 800}),*/
 		Timeout: 5000,
 	}
 
@@ -130,7 +134,7 @@ func (h *Handler) Make(ctx *gin.Context) {
 		totalRequestsCounter.WithLabelValues("499").Inc()
 		newErrorResponse(ctx, http.StatusRequestTimeout, "request timeout")
 		return
-	case <-time.After(10 * time.Second): // Таймаут на выполнение
+	case <-time.After(20 * time.Second): // Таймаут на выполнение
 		totalRequestsCounter.WithLabelValues("504").Inc()
 		newErrorResponse(ctx, http.StatusRequestTimeout, "screenshot generation timeout")
 		return
@@ -138,8 +142,8 @@ func (h *Handler) Make(ctx *gin.Context) {
 
 }
 
+// Дополнительные кастомные метрики
 func (h *Handler) MetricsHandler(ctx *gin.Context) {
-	// Дополнительные кастомные метрики
 	ctx.JSON(http.StatusOK, gin.H{
 		"active_workers": len(h.workerPool),
 		"max_workers":    h.cfg.MaxWorkers,

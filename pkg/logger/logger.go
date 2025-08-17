@@ -4,7 +4,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/rs/zerolog"
 	"os"
-	"screenshorter/config"
+	"screenshoter/config"
 )
 
 type Logger struct {
