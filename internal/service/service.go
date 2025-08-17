@@ -11,6 +11,14 @@ type SelectionArea struct {
 	Height int `json:"height"` // Высота выделенной области
 }
 
+// SelectionStyle определяет стиль выделения
+type SelectionStyle struct {
+	BorderColor string  `json:"borderColor"` // Цвет рамки (CSS-формат)
+	BorderWidth int     `json:"borderWidth"` // Толщина рамки (px)
+	BorderStyle string  `json:"borderStyle"` // Стиль рамки: "solid", "dashed", "dotted"
+	Opacity     float64 `json:"opacity"`     // Прозрачность (0.0 - 1.0)
+}
+
 // ScreenshotOptions параметры для настройки скриншота
 type ScreenshotOptions struct {
 	Browser        BrowserType `json:"browser"`
@@ -22,8 +30,9 @@ type ScreenshotOptions struct {
 		Width  int `json:"width"`
 		Height int `json:"height"`
 	} `json:"viewport"`
-	Timeout    float64 `json:"timeout"`
-	Selections []SelectionArea
+	Timeout        float64 `json:"timeout"`
+	Selections     []SelectionArea
+	SelectionStyle *SelectionStyle
 }
 
 type Service struct {

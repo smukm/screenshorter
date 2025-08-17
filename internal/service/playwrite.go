@@ -120,7 +120,18 @@ func (p *Playwrite) Make(html string, opts ScreenshotOptions) ([]byte, string, e
 	// Если указана область выделения
 	if opts.Selections != nil {
 
-		for _, selection := range opts.Selections {
+		// Стандартный стиль, если не указан
+		style := opts.SelectionStyle
+		if style == nil {
+			style = &SelectionStyle{
+				BorderColor: "#FF0000",
+				BorderWidth: 2,
+				BorderStyle: "dashed",
+				Opacity:     1.0,
+			}
+		}
+
+		for i, selection := range opts.Selections {
 			// Проверяем валидность координат
 			if selection.Width <= 0 || selection.Height <= 0 {
 				return nil, "", fmt.Errorf("invalid selection dimensions: width and height must be positive")
@@ -128,22 +139,31 @@ func (p *Playwrite) Make(html string, opts ScreenshotOptions) ([]byte, string, e
 
 			// JavaScript код для добавления прямоугольника выделения
 			js := fmt.Sprintf(`
-            const div = document.createElement('div');
-            div.style.position = 'absolute';
-            div.style.left = '%dpx';
-            div.style.top = '%dpx';
-            div.style.width = '%dpx';
-            div.style.height = '%dpx';
-            div.style.border = '2px dashed #FF0000';
-            div.style.boxSizing = 'border-box';
-            div.style.zIndex = '2147483647';
-            div.style.pointerEvents = 'none';
-            document.body.appendChild(div);
-        `,
+				(() => {
+					const div = document.createElement('div');
+					div.id = 'selection-rect-%d';
+					div.style.position = 'absolute';
+					div.style.left = '%dpx';
+					div.style.top = '%dpx';
+					div.style.width = '%dpx';
+					div.style.height = '%dpx';
+					div.style.border = '%dpx %s %s';
+					div.style.opacity = '%f';
+					div.style.boxSizing = 'border-box';
+					div.style.zIndex = '2147483647';
+					div.style.pointerEvents = 'none';
+					document.body.appendChild(div);
+				})()
+			`,
+				i,
 				selection.X,
 				selection.Y,
 				selection.Width,
 				selection.Height,
+				style.BorderWidth,
+				style.BorderStyle,
+				style.BorderColor,
+				style.Opacity,
 			)
 
 			// Выполняем JavaScript на странице

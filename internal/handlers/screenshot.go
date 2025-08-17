@@ -111,6 +111,12 @@ func (h *Handler) Make(ctx *gin.Context) {
 				Width: 150, Height: 100,
 			},
 		},
+		SelectionStyle: &service.SelectionStyle{
+			BorderColor: "#00FF00",
+			BorderWidth: 3,
+			BorderStyle: "solid",
+			Opacity:     0.8,
+		},
 	}
 
 	// Канал для результата
