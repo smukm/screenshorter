@@ -190,15 +190,15 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 			effectiveY := selection.Y
 			// Если указаны scrollX/Y, используем их, иначе текущую прокрутку
 			if selection.ScrollX != 0 {
-				effectiveX -= selection.ScrollX
+				effectiveX += selection.ScrollX
 			} else {
-				effectiveX -= currentScrollX
+				effectiveX += currentScrollX
 			}
 
 			if selection.ScrollY != 0 {
-				effectiveY -= selection.ScrollY
+				effectiveY += selection.ScrollY
 			} else {
-				effectiveY -= currentScrollY
+				effectiveY += currentScrollY
 			}
 
 			// JavaScript код для добавления прямоугольника выделения
