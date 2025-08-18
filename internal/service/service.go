@@ -5,10 +5,12 @@ type Screenshot interface {
 }
 
 type SelectionArea struct {
-	X      int `json:"x"`      // Координата X начальной точки
-	Y      int `json:"y"`      // Координата Y начальной точки
-	Width  int `json:"width"`  // Ширина выделенной области
-	Height int `json:"height"` // Высота выделенной области
+	X       int `json:"x"`                 // Координата X начальной точки
+	Y       int `json:"y"`                 // Координата Y начальной точки
+	Width   int `json:"width"`             // Ширина выделенной области
+	Height  int `json:"height"`            // Высота выделенной области
+	ScrollX int `json:"scrollx,omitempty"` // Горизонтальная прокрутка
+	ScrollY int `json:"scrolly,omitempty"` // Вертикальная прокрутка
 }
 
 // SelectionStyle стиль выделения

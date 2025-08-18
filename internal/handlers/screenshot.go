@@ -88,28 +88,18 @@ func (h *Handler) Make(ctx *gin.Context) {
 		return
 	}
 
-	// Обработка user selections
-	form, err := ctx.MultipartForm()
-	if err != nil {
-		newErrorResponse(ctx, http.StatusBadRequest, err.Error())
-		return
-	}
-	var selections []service.SelectionArea
-	i := 0
-	for {
-		heightVals, heightExists := form.Value[fmt.Sprintf("selections[%d][height]", i)]
-		if !heightExists || len(heightVals) == 0 {
-			break
+	// Получаем параметры выделенной области
+	var selection *service.SelectionArea
+	if ctx.PostForm("x") != "" {
+		selection = &service.SelectionArea{
+			X:       parseInt(ctx.PostForm("x")),
+			Y:       parseInt(ctx.PostForm("y")),
+			Width:   parseInt(ctx.PostForm("width")),
+			Height:  parseInt(ctx.PostForm("height")),
+			ScrollX: parseInt(ctx.PostForm("scrollx")),
+			ScrollY: parseInt(ctx.PostForm("scrolly")),
 		}
-
-		var s service.SelectionArea
-		s.Height = parseInt(form.Value[fmt.Sprintf("selections[%d][height]", i)][0])
-		s.Width = parseInt(form.Value[fmt.Sprintf("selections[%d][width]", i)][0])
-		s.X = parseInt(form.Value[fmt.Sprintf("selections[%d][x]", i)][0])
-		s.Y = parseInt(form.Value[fmt.Sprintf("selections[%d][y]", i)][0])
-
-		selections = append(selections, s)
-		i++
+		fmt.Println(selection)
 	}
 
 	// Настройки скриншота
@@ -126,14 +116,18 @@ func (h *Handler) Make(ctx *gin.Context) {
 			Width  int
 			Height int
 		}{Width: 1200, Height: 800}),*/
-		Timeout:    5000,
-		Selections: selections,
+		Timeout: 5000,
 		SelectionStyle: &service.SelectionStyle{
 			BorderColor: h.cfg.SelectionBorderColor,
 			BorderWidth: h.cfg.SelectionBorderWidth,
 			BorderStyle: h.cfg.SelectionBorderStyle,
 			Opacity:     h.cfg.SelectionBorderOpacity,
 		},
+	}
+
+	// Если есть выделенная область, добавляем ее
+	if selection != nil {
+		opts.Selections = []service.SelectionArea{*selection}
 	}
 
 	// Канал для результата

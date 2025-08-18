@@ -147,10 +147,58 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 			}
 		}
 
+		// Получаем текущую прокрутку страницы
+		scrollJS := `({ scrollX: window.scrollX, scrollY: window.scrollY })`
+		scrollResult, err := page.Evaluate(scrollJS)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to get page scroll position: %w", err)
+		}
+
+		// Safe type conversion
+		scrollData, ok := scrollResult.(map[string]interface{})
+		if !ok {
+			return nil, "", fmt.Errorf("unexpected scroll position format")
+		}
+
+		// Helper function to safely convert scroll values to int
+		getScrollValue := func(val interface{}) int {
+			switch v := val.(type) {
+			case float64:
+				return int(v)
+			case int:
+				return v
+			case int32:
+				return int(v)
+			case int64:
+				return int(v)
+			default:
+				return 0
+			}
+		}
+
+		currentScrollX := getScrollValue(scrollData["scrollX"])
+		currentScrollY := getScrollValue(scrollData["scrollY"])
+
 		for i, selection := range opts.Selections {
 			// Проверяем валидность координат
 			if selection.Width <= 0 || selection.Height <= 0 {
 				return nil, "", fmt.Errorf("invalid selection dimensions: width and height must be positive")
+			}
+
+			// Рассчитываем позицию с учетом прокрутки
+			effectiveX := selection.X
+			effectiveY := selection.Y
+			// Если указаны scrollX/Y, используем их, иначе текущую прокрутку
+			if selection.ScrollX != 0 {
+				effectiveX -= selection.ScrollX
+			} else {
+				effectiveX -= currentScrollX
+			}
+
+			if selection.ScrollY != 0 {
+				effectiveY -= selection.ScrollY
+			} else {
+				effectiveY -= currentScrollY
 			}
 
 			// JavaScript код для добавления прямоугольника выделения
@@ -172,8 +220,8 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 				})()
 			`,
 				i,
-				selection.X,
-				selection.Y,
+				effectiveX,
+				effectiveY,
 				selection.Width,
 				selection.Height,
 				style.BorderWidth,
