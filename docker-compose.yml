@@ -14,27 +14,11 @@ services:
       SS_LOGFORMAT: ${SS_LOGFORMAT} # json or text
       SS_LOGTARGET: ${SS_LOGTARGET} # local or sentry
       SS_SENTRYDSN: ${SS_SENTRYDSN} # sentry DSN
+      SS_SELECTION_BORDER_COLOR: ${SS_SELECTION_BORDER_COLOR} # цвет рамки выделенной области
+      SS_SELECTION_BORDER_WIDTH: ${SS_SELECTION_BORDER_WIDTH} # ширина рамки выделенной области
+      SS_SELECTION_BORDER_STYLE: ${SS_SELECTION_BORDER_STYLE}  # стиль рамки выделенной области
+      SS_SELECTION_BORDER_OPACITY: ${SS_SELECTION_BORDER_OPACITY} # прозрачность рамки выделенной области
+
     ports:
       - "${SS_PORT}:${SS_PORT}"
     restart: always
-
-  prometheus:
-    image: prom/prometheus
-    ports:
-      - "9091:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on:
-      - screenshoter
-
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-storage:/var/lib/grafana
-    depends_on:
-      - prometheus
-
-volumes:
-  grafana-storage:

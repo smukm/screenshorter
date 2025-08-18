@@ -46,7 +46,7 @@ func main() {
 		defer sentry.Flush(2 * time.Second)
 	}
 
-	screenshoter, err := service.NewPlaywrite()
+	screenshoter, err := service.NewPlaywright(lgr)
 	if err != nil {
 		lgr.Fatal().Err(err).Msgf("Failed to initialize Playwright")
 	}

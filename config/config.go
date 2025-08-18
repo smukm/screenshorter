@@ -20,9 +20,14 @@ type Config struct {
 	MaxWorkers int `default:"5"`
 
 	Type string `default:"png"`
+
+	SelectionBorderColor   string  `default:"red" split_words:"true"`
+	SelectionBorderWidth   int     `default:"3" split_words:"true"`
+	SelectionBorderStyle   string  `default:"solid" split_words:"true"`
+	SelectionBorderOpacity float64 `default:"0.8" split_words:"true"`
 }
 
-// получить кофигурацию из переменных окружения
+// ReadConfig получить кофигурацию из переменных окружения
 func ReadConfig() (*Config, error) {
 	config := &Config{}
 

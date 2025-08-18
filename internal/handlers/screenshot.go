@@ -1,14 +1,16 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"screenshoter/internal/service"
+	"strconv"
 	"time"
 )
 
-// метрики для prometeus
+// метрики для prometheus
 var (
 	activeWorkersGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "screenshot_service_active_workers",
@@ -86,6 +88,30 @@ func (h *Handler) Make(ctx *gin.Context) {
 		return
 	}
 
+	// Обработка user selections
+	form, err := ctx.MultipartForm()
+	if err != nil {
+		newErrorResponse(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	var selections []service.SelectionArea
+	i := 0
+	for {
+		heightVals, heightExists := form.Value[fmt.Sprintf("selections[%d][height]", i)]
+		if !heightExists || len(heightVals) == 0 {
+			break
+		}
+
+		var s service.SelectionArea
+		s.Height = parseInt(form.Value[fmt.Sprintf("selections[%d][height]", i)][0])
+		s.Width = parseInt(form.Value[fmt.Sprintf("selections[%d][width]", i)][0])
+		s.X = parseInt(form.Value[fmt.Sprintf("selections[%d][x]", i)][0])
+		s.Y = parseInt(form.Value[fmt.Sprintf("selections[%d][y]", i)][0])
+
+		selections = append(selections, s)
+		i++
+	}
+
 	// Настройки скриншота
 	opts := service.ScreenshotOptions{
 		Browser:        defaultBrowser,
@@ -100,22 +126,13 @@ func (h *Handler) Make(ctx *gin.Context) {
 			Width  int
 			Height int
 		}{Width: 1200, Height: 800}),*/
-		Timeout: 5000,
-		Selections: []service.SelectionArea{
-			{
-				X: 100, Y: 150,
-				Width: 300, Height: 200,
-			},
-			{
-				X: 50, Y: 50,
-				Width: 150, Height: 100,
-			},
-		},
+		Timeout:    5000,
+		Selections: selections,
 		SelectionStyle: &service.SelectionStyle{
-			BorderColor: "#00FF00",
-			BorderWidth: 3,
-			BorderStyle: "solid",
-			Opacity:     0.8,
+			BorderColor: h.cfg.SelectionBorderColor,
+			BorderWidth: h.cfg.SelectionBorderWidth,
+			BorderStyle: h.cfg.SelectionBorderStyle,
+			Opacity:     h.cfg.SelectionBorderOpacity,
 		},
 	}
 
@@ -158,7 +175,12 @@ func (h *Handler) Make(ctx *gin.Context) {
 
 }
 
-// Дополнительные кастомные метрики
+func parseInt(s string) int {
+	val, _ := strconv.Atoi(s)
+	return val
+}
+
+// MetricsHandler Дополнительные кастомные метрики
 func (h *Handler) MetricsHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"active_workers": len(h.workerPool),

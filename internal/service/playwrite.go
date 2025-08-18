@@ -1,9 +1,11 @@
 package service
 
 import (
+	"crypto/rand"
 	"fmt"
 	"os"
 	"path/filepath"
+	"screenshoter/pkg/logger"
 
 	"github.com/playwright-community/playwright-go"
 )
@@ -16,24 +18,29 @@ const (
 	BrowserWebkit   BrowserType = "webkit"
 )
 
-type Playwrite struct {
-	pw *playwright.Playwright
+type Playwright struct {
+	pw  *playwright.Playwright
+	lgr *logger.Logger
 }
 
-func NewPlaywrite() (*Playwrite, error) {
+func NewPlaywright(lgr *logger.Logger) (*Playwright, error) {
 	pw, err := playwright.Run()
 	if err != nil {
 		return nil, fmt.Errorf("could not launch playwright: %w", err)
 	}
-	return &Playwrite{pw: pw}, nil
+	return &Playwright{pw: pw, lgr: lgr}, nil
 }
 
 // Close освобождает ресурсы
-func (p *Playwrite) Close() error {
+func (p *Playwright) Close() error {
 	return p.pw.Stop()
 }
 
-func (p *Playwrite) Make(html string, opts ScreenshotOptions) ([]byte, string, error) {
+// Make формирует скриншот из html
+func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, error) {
+	if html == "" {
+		return nil, "", fmt.Errorf("html content cannot be empty")
+	}
 	// Выбираем браузер в зависимости от параметра
 	var browser playwright.Browser
 	var err error
@@ -50,23 +57,32 @@ func (p *Playwrite) Make(html string, opts ScreenshotOptions) ([]byte, string, e
 	if err != nil {
 		return nil, "", fmt.Errorf("could not launch %s browser: %w", opts.Browser, err)
 	}
-	defer browser.Close()
+	defer func() {
+		if closeErr := browser.Close(); closeErr != nil {
+			p.lgr.Warn().Msgf("failed to close browser: %v", closeErr)
+		}
+	}()
 
-	// Создаем временный HTML файл
-	tmpDir := os.TempDir()
-	htmlPath := filepath.Join(tmpDir, "screenshot.html")
-
-	err = os.WriteFile(htmlPath, []byte(html), 0644)
+	// Создаем временный файл со случайным именем
+	htmlPath, err := p.createTempHTML(html)
 	if err != nil {
 		return nil, "", err
 	}
-	defer os.Remove(htmlPath)
+	defer func() {
+		if removeErr := os.Remove(htmlPath); removeErr != nil {
+			p.lgr.Warn().Msgf("failed to remove temp file %s: %v", htmlPath, removeErr)
+		}
+	}()
 
 	page, err := browser.NewPage()
 	if err != nil {
 		return nil, "", err
 	}
-	defer page.Close()
+	defer func() {
+		if closeErr := page.Close(); closeErr != nil {
+			p.lgr.Warn().Msgf("failed to close page: %v", closeErr)
+		}
+	}()
 
 	// Устанавливаем размер viewport если указан
 	if opts.Viewport != nil {
@@ -180,4 +196,18 @@ func (p *Playwrite) Make(html string, opts ScreenshotOptions) ([]byte, string, e
 	}
 
 	return bytes, contentType, nil
+}
+
+// createTempHtml создает файл с контентом со случайным именем
+func (p *Playwright) createTempHTML(content string) (string, error) {
+	tmpDir := os.TempDir()
+
+	// Создаем случайное имя файла
+	randBytes := make([]byte, 8)
+	if _, err := rand.Read(randBytes); err != nil {
+		return "", fmt.Errorf("failed to generate random filename: %w", err)
+	}
+	filename := fmt.Sprintf("screenshot_%x.html", randBytes)
+	htmlPath := filepath.Join(tmpDir, filename)
+	return htmlPath, os.WriteFile(htmlPath, []byte(content), 0644)
 }

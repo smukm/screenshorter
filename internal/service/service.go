@@ -11,7 +11,7 @@ type SelectionArea struct {
 	Height int `json:"height"` // Высота выделенной области
 }
 
-// SelectionStyle определяет стиль выделения
+// SelectionStyle стиль выделения
 type SelectionStyle struct {
 	BorderColor string  `json:"borderColor"` // Цвет рамки (CSS-формат)
 	BorderWidth int     `json:"borderWidth"` // Толщина рамки (px)
