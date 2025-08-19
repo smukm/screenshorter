@@ -92,12 +92,10 @@ func (h *Handler) Make(ctx *gin.Context) {
 	var selection *service.SelectionArea
 	if ctx.PostForm("x") != "" {
 		selection = &service.SelectionArea{
-			X:       parseInt(ctx.PostForm("x")),
-			Y:       parseInt(ctx.PostForm("y")),
-			Width:   parseInt(ctx.PostForm("width")),
-			Height:  parseInt(ctx.PostForm("height")),
-			ScrollX: parseInt(ctx.PostForm("scrollx")),
-			ScrollY: parseInt(ctx.PostForm("scrolly")),
+			X:      parseInt(ctx.PostForm("x")),
+			Y:      parseInt(ctx.PostForm("y")),
+			Width:  parseInt(ctx.PostForm("width")),
+			Height: parseInt(ctx.PostForm("height")),
 		}
 		fmt.Println(selection)
 	}
@@ -109,13 +107,16 @@ func (h *Handler) Make(ctx *gin.Context) {
 		Quality:        nil,
 		FullPage:       true,
 		OmitBackground: false,
-		/*Viewport: (*struct {
+		Viewport: (*struct {
 			Width  int `json:"width"`
 			Height int `json:"height"`
 		})(&struct {
 			Width  int
 			Height int
-		}{Width: 1200, Height: 800}),*/
+		}{
+			Width:  parseInt(ctx.PostForm("visiblewidth")),
+			Height: parseInt(ctx.PostForm("visibleheight")),
+		}),
 		Timeout: 5000,
 		SelectionStyle: &service.SelectionStyle{
 			BorderColor: h.cfg.SelectionBorderColor,
@@ -123,6 +124,8 @@ func (h *Handler) Make(ctx *gin.Context) {
 			BorderStyle: h.cfg.SelectionBorderStyle,
 			Opacity:     h.cfg.SelectionBorderOpacity,
 		},
+		ScrollX: parseInt(ctx.PostForm("scrollx")),
+		ScrollY: parseInt(ctx.PostForm("scrolly")),
 	}
 
 	// Если есть выделенная область, добавляем ее

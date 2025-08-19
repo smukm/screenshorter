@@ -9,7 +9,7 @@ const Version = "1.0.0"
 
 type Config struct {
 	Port        string `required:"true" default:"8033"`
-	AccessToken string `required:"true" default:"12345"`
+	AccessToken string `required:"true" default:"secret"`
 
 	LogLevel  int    `default:"1"`
 	LogFormat string `default:"json"`

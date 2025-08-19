@@ -35,6 +35,8 @@ type ScreenshotOptions struct {
 	Timeout        float64 `json:"timeout"`
 	Selections     []SelectionArea
 	SelectionStyle *SelectionStyle
+	ScrollX        int `json:"scrollx"`
+	ScrollY        int `json:"scrolly"`
 }
 
 type Service struct {

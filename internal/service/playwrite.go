@@ -3,11 +3,11 @@ package service
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/playwright-community/playwright-go"
 	"os"
 	"path/filepath"
 	"screenshoter/pkg/logger"
-
-	"github.com/playwright-community/playwright-go"
+	"time"
 )
 
 type BrowserType string
@@ -111,6 +111,16 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 		return nil, "", err
 	}
 
+	// Прокручиваем страницу если нужно
+	if opts.ScrollX != 0 || opts.ScrollY != 0 {
+		_, err := page.Evaluate(fmt.Sprintf("window.scrollTo(%d, %d)", opts.ScrollX, opts.ScrollY))
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to scroll page: %w", err)
+		}
+		// Ждем завершения прокрутки
+		time.Sleep(100 * time.Millisecond)
+	}
+
 	// Настраиваем параметры скриншота
 	screenshotOpts := playwright.PageScreenshotOptions{
 		FullPage:       playwright.Bool(opts.FullPage),
@@ -147,58 +157,25 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 			}
 		}
 
-		// Получаем текущую прокрутку страницы
-		scrollJS := `({ scrollX: window.scrollX, scrollY: window.scrollY })`
-		scrollResult, err := page.Evaluate(scrollJS)
-		if err != nil {
-			return nil, "", fmt.Errorf("failed to get page scroll position: %w", err)
-		}
-
-		// Safe type conversion
-		scrollData, ok := scrollResult.(map[string]interface{})
-		if !ok {
-			return nil, "", fmt.Errorf("unexpected scroll position format")
-		}
-
-		// Helper function to safely convert scroll values to int
-		getScrollValue := func(val interface{}) int {
-			switch v := val.(type) {
-			case float64:
-				return int(v)
-			case int:
-				return v
-			case int32:
-				return int(v)
-			case int64:
-				return int(v)
-			default:
-				return 0
-			}
-		}
-
-		currentScrollX := getScrollValue(scrollData["scrollX"])
-		currentScrollY := getScrollValue(scrollData["scrollY"])
-
 		for i, selection := range opts.Selections {
 			// Проверяем валидность координат
 			if selection.Width <= 0 || selection.Height <= 0 {
 				return nil, "", fmt.Errorf("invalid selection dimensions: width and height must be positive")
 			}
 
-			// Рассчитываем позицию с учетом прокрутки
-			effectiveX := selection.X
-			effectiveY := selection.Y
-			// Если указаны scrollX/Y, используем их, иначе текущую прокрутку
-			if selection.ScrollX != 0 {
-				effectiveX += selection.ScrollX
-			} else {
-				effectiveX += currentScrollX
-			}
+			// Абсолютные координаты на странице
+			absoluteX := selection.X
+			absoluteY := selection.Y
 
-			if selection.ScrollY != 0 {
-				effectiveY += selection.ScrollY
-			} else {
-				effectiveY += currentScrollY
+			// Проверяем видимость в текущем viewport
+			visibleX := absoluteX - opts.ScrollX
+			visibleY := absoluteY - opts.ScrollY
+			if visibleX+selection.Width <= 0 || // Полностью слева от viewport
+				visibleY+selection.Height <= 0 || // Полностью сверху от viewport
+				visibleX >= opts.Viewport.Width || // Полностью справа от viewport
+				visibleY >= opts.Viewport.Height { // Полностью снизу от viewport
+				p.lgr.Debug().Msgf("Selection %d is not visible in current viewport", i)
+				continue
 			}
 
 			// JavaScript код для добавления прямоугольника выделения
@@ -216,12 +193,16 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 					div.style.boxSizing = 'border-box';
 					div.style.zIndex = '2147483647';
 					div.style.pointerEvents = 'none';
-					document.body.appendChild(div);
+					if (document.body) {
+						document.body.appendChild(div);
+					} else if (document.documentElement) {
+						document.documentElement.appendChild(div);
+					}
 				})()
 			`,
 				i,
-				effectiveX,
-				effectiveY,
+				absoluteX,
+				absoluteY,
 				selection.Width,
 				selection.Height,
 				style.BorderWidth,
@@ -246,7 +227,7 @@ func (p *Playwright) Make(html string, opts ScreenshotOptions) ([]byte, string, 
 	return bytes, contentType, nil
 }
 
-// createTempHtml создает файл с контентом со случайным именем
+// createTempHTML создает файл с контентом со случайным именем
 func (p *Playwright) createTempHTML(content string) (string, error) {
 	tmpDir := os.TempDir()
 
@@ -257,5 +238,11 @@ func (p *Playwright) createTempHTML(content string) (string, error) {
 	}
 	filename := fmt.Sprintf("screenshot_%x.html", randBytes)
 	htmlPath := filepath.Join(tmpDir, filename)
-	return htmlPath, os.WriteFile(htmlPath, []byte(content), 0644)
+
+	// Записываем файл и проверяем ошибку
+	if err := os.WriteFile(htmlPath, []byte(content), 0644); err != nil {
+		return "", fmt.Errorf("failed to write temp file: %w", err)
+	}
+
+	return htmlPath, nil
 }
